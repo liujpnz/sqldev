@@ -1,0 +1,9 @@
+1.
+find:
+datetime\.date\(([\d]+)\, ([\d]+)\, ([\d]+)\)
+replace:
+'$1-$2-$3'
+
+2.
+ (\d)\,  --space in begin
+ '$1',
