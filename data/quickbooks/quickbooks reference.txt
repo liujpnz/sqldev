@@ -1,3 +1,14 @@
-refnumber
+
+##refnumber
 https://support.flexquarters.com/esupport/index.php?/Knowledgebase/Article/View/2492/0/qodbc-desktop-how-to-find-so-number-information-of-sales-order-in-qodbc
 
+##How are dates formatted in SQL queries when using the QuickBooks generated timestamps
+https://support.flexquarters.com/esupport/index.php?/knowledgebase/article/View/2203/50/qodbc-desktop-how-are-dates-formatted-in-sql-queries-when-using-the-quickbooks-generated-timestamps
+Date Format
+
+SELECT * from InvoiceLine WHERE TxnDate >= {d '2005-09-23'}
+
+Time Stamps Format
+
+SELECT * FROM Customer WHERE TimeCreated = {ts '1999-07-29 14:24:18.000'}
+SELECT * from InvoiceLine WHERE TimeModified >= {ts '2005-09-23 00:00:00.000'} 
