@@ -76,10 +76,15 @@ use DatawarehouseDB
 
 --todo
 --bak tables
-select * into Saleorder_bak from Salesorder;
-select * into Saleorderline_bak from SalesorderLine;
-select * into invoice_bak from Invoice;
-select * into invoiceline_bak from Invoiceline;
+select * into Saleorder_bak0725 from Salesorder;
+select * into Saleorderline_bak0725 from SalesorderLine;
+select * into invoice_bak0725 from Invoice;
+select * into invoiceline_bak0725 from Invoiceline; 
+
+select count(*) from Salesorder;  --21721
+select count(*) from SalesorderLine; --66226
+select count(*) from Invoice; --22088
+select count(*) from Invoiceline; --76312
 
 select * from DataCenter.dbo.Salesorder
 select * from DatawarehouseDB.dbo.Salesorder
@@ -94,15 +99,19 @@ alter table DatawarehouseDB.dbo.invoiceline alter column refnumber varchar(50);
 use DatawarehouseDB
 dbcc checkident('Salesorder',reseed,-1000000)
 select IDENT_CURRENT('Salesorder') as curr,IDENT_INCR('Salesorder') as incr,IDENT_SEED('Salesorder') as seed 
+--25920
 
 dbcc checkident('Salesorderline',reseed,-1000000)
 select IDENT_CURRENT('Salesorderline') as curr,IDENT_INCR('Salesorderline') as incr,IDENT_SEED('Salesorderline') as seed 
+--225134
 
 dbcc checkident('Invoice',reseed,-1000000)
 select IDENT_CURRENT('Invoice') as curr,IDENT_INCR('Invoice') as incr,IDENT_SEED('Invoice') as seed 
+--25140
 
 dbcc checkident('Invoiceline',reseed,-1000000)
 select IDENT_CURRENT('Invoiceline') as curr,IDENT_INCR('Invoiceline') as incr,IDENT_SEED('Invoiceline') as seed 
+--88469
 
 --disable trigger
 ALTER TABLE [DatawarehouseDB].[dbo].[Salesorder] DISABLE TRIGGER [Salesorder_AutoGenerateRefnumber];
@@ -284,7 +293,7 @@ WHERE InvoiceID = invoice.Id
 	AND invoice.Store = 'auckland'
 	and invoice.id>0
 GROUP BY datepart(week, invoice.TxnDate)
-ORDER BY datepart(week, invoice.TxnDate)
+ORDER BY datepart(week, invoice.TxnDate)	
 
 
 SELECT sum(SalesOrderLineQuantity - SalesOrderLineInvoiced) AS uninvoiced
@@ -293,7 +302,7 @@ WHERE (SalesOrderLineQuantity - SalesOrderLineInvoiced) > 0
 
 
 
-create nonclustered index idx_invoiceline on invoiceline(invoiceid) include (InvoiceLineItemFullName,InvoiceLineAmount)
+--create nonclustered index idx_invoiceline on invoiceline(invoiceid) include (InvoiceLineItemFullName,InvoiceLineAmount)
 drop index idx_invoiceline on invoiceline
 
 select count(distinct(so.id)) as number from salesorder   so 
@@ -316,6 +325,27 @@ create nonclustered index idx_salesorderline on salesorderline(SalesorderID)
 
 
 
+
+--identity reseed
+use DatawarehouseDB
+dbcc checkident('Salesorder',reseed)
+select IDENT_CURRENT('Salesorder') as curr,IDENT_INCR('Salesorder') as incr,IDENT_SEED('Salesorder') as seed 
+--25920
+
+dbcc checkident('Salesorderline',reseed)
+select IDENT_CURRENT('Salesorderline') as curr,IDENT_INCR('Salesorderline') as incr,IDENT_SEED('Salesorderline') as seed 
+--225134
+
+dbcc checkident('Invoice',reseed)
+select IDENT_CURRENT('Invoice') as curr,IDENT_INCR('Invoice') as incr,IDENT_SEED('Invoice') as seed 
+--25140
+
+dbcc checkident('Invoiceline',reseed)
+select IDENT_CURRENT('Invoiceline') as curr,IDENT_INCR('Invoiceline') as incr,IDENT_SEED('Invoiceline') as seed 
+--88469
+
+
+
 --update customerID to 240
 select CustomerID from Salesorder where id<0
 update Salesorder set CustomerID=240 where id<0
@@ -323,6 +353,66 @@ update Salesorder set CustomerID=240 where id<0
 select CustomerID from Invoice where id<0
 update Invoice set CustomerID=240 where id<0
 
+
+alter table salesorder alter column InvoiceRefNumber varchar(120)
+with data as
+(
+select SalesorderRefNumber,STRING_AGG(RefNumber,',')+',' as num From invoice 
+where id<0 and SalesorderRefNumber is not null GROUP BY SalesorderRefNumber
+)
+update Salesorder set InvoiceRefNumber=data.num  from salesorder join data on salesorder.RefNumber=data.SalesorderRefNumber where id<0
+
+
+
+select TimeInvoiced from Salesorder where id<0
+with data as
+(
+select SalesorderRefNumber,max(TimeCreated) as num From invoice 
+where id<0 and SalesorderRefNumber is not null GROUP BY SalesorderRefNumber
+)
+update Salesorder set TimeInvoiced=data.num  from salesorder join data on salesorder.RefNumber=data.SalesorderRefNumber where id<0
+
+
+----
+
+
+select  from Invoice order by id desc
+select InvoiceRefNumber from Salesorder order by id desc
+
+select InvoiceRefNumber from Salesorder where id=25482
+union all
+select InvoiceRefNumber from salesorder where RefNumber='HS65955'
+select RefNumber,* From invoice where SalesorderRefNumber in ('S35482','HS65955')
+
+GROUP BY GroupName;
+select STRING_AGG(RefNumber,'.')+'.' From invoice where SalesorderRefNumber='HS65955'
+
+alter table salesorder alter column InvoiceRefNumber varchar(120)
+with data as
+(
+select SalesorderRefNumber,STRING_AGG(RefNumber,',')+',' as num From invoice 
+where id<0 and SalesorderRefNumber is not null GROUP BY SalesorderRefNumber
+)
+update Salesorder set InvoiceRefNumber=data.num  from salesorder join data on salesorder.RefNumber=data.SalesorderRefNumber where id<0
+
+
+
+select TimeInvoiced from Salesorder where id<0
+with data as
+(
+select SalesorderRefNumber,max(TimeCreated) as num From invoice 
+where id<0 and SalesorderRefNumber is not null GROUP BY SalesorderRefNumber
+)
+update Salesorder set TimeInvoiced=data.num  from salesorder join data on salesorder.RefNumber=data.SalesorderRefNumber where id<0
+
+
+
+select * from salesorder where RefNumber='HS65955'
+
+select * From invoice where RefNumber='HI76998' ;
+
+select SalesorderRefNumber,STRING_AGG(RefNumber,'.')+'.' as num, len(STRING_AGG(RefNumber,'.')+'.') From invoice 
+where id<0 and SalesorderRefNumber is not null GROUP BY SalesorderRefNumber order by 3 desc
 
 
 select count(*) from [192.168.20.213].DatawarehouseDB.dbo.iteminventory
@@ -333,7 +423,18 @@ select count(*) from [192.168.20.213].DatawarehouseDB.dbo.iteminventory
 
 
 
+
+
 --rollback
+
+--check new rows
+select * from Salesorder where  id <0 and txndate>getdate()-2;
+
+select * from Salesorder where  id<0 and txndate>'2018-07-23';
+select * from Invoice where  id<0 and txndate>'2018-07-23';
+
+
+
 
 --delete inserted data
 delete DatawarehouseDB.dbo.Salesorder where id<0
@@ -343,4 +444,8 @@ delete DatawarehouseDB.dbo.Invoiceline where id<0
 
 
 or
+
+use DatawarehouseDB
+exec sp_rename 'dbo.table_oldname','newname'
+
 
