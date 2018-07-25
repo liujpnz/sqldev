@@ -291,6 +291,26 @@ WHERE (SalesOrderLineQuantity - SalesOrderLineInvoiced) > 0
 create nonclustered index idx_invoiceline on invoiceline(invoiceid) include (InvoiceLineItemFullName,InvoiceLineAmount)
 
 
+select count(distinct(so.id)) as number from salesorder   so 
+				left join salesorderline cc
+				 on cc.SalesorderID = so.id
+				left join iteminventory dd
+				 on dd.name = cc.SalesOrderLineItemRefFullName 
+
+				where  (so.store = 'auckland') and  so.ordertype='BACKORDER' and so.status not in ('fully_canceled','fully_invoiced','delivered','close') and so.IsApproved=1	
+				and 
+				lower(cc.SalesOrderLineItemRefFullName)<>'freight'
+							  and cc.SalesOrderLineQuantity > cc.SalesOrderLineInvoiced 
+				and dd.QuantityOnHand >= (cc.SalesOrderLineQuantity - cc.SalesOrderLineInvoiced )
+
+create nonclustered index idx_salesorderline on salesorderline(SalesorderID,InvoiceLineItemFullName)
+
+
+create nonclustered index idx_invoice_txndate on invoice(txndate)
+drop index idx_invoice_txndate on invoice
+
+create noncluster index id_invoiceline_
+
 --update customerID to 240
 select CustomerID from Salesorder where id<0
 update Salesorder set CustomerID=240 where id<0
