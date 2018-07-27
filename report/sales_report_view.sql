@@ -1,6 +1,6 @@
 
 --1. Sales by Rep
-create view kpi.SalesbyRep as
+create view [kpi].[SalesbyRep] as
 with data as
 (
 select SalesRepRefFullName, cast(datepart(DAY,getdate())-datepart(DAY,txndate) as varchar(5)) + 'd' as range,sum(round(TotalAmount,0)) TotalSales from Salesorder
@@ -18,8 +18,8 @@ group by SalesRepRefFullName,datepart(month,txndate)
 select SalesRepRefFullName as RepName, isnull([0d],0) as [Today],isnull([1d],0) as [L1D],isnull([2d],0) as [L2D],isnull([3d],0) as [L3D],isnull([0w],0) as [WTD],isnull([1w],0) as [L1W],isnull([2w],0) as [L2W],isnull([3w],0) as [L3W],isnull([4w],0) as [L4W],isnull([5w],0) as [L5W],isnull([0m],0) as [MTD],isnull([1m],0) as [L1M],isnull([2m],0) as [L2M],isnull([3m],0) as [L3M],isnull([4m],0) as [L4M],isnull([5m],0) as [L5M]
 from data
 pivot (sum(TotalSales) for [range] in ([0d],[1d],[2d],[3d],[0w],[1w],[2w],[3w],[4w],[5w],[0m],[1m],[2m],[3m],[4m],[5m])) as Total
-where SalesRepRefFullName not in (' ', 'Tarun', 'Manan', 'Steve', 'Aarti', 'Colin', 'Joshi', 'Dan', 'Cryst', 'shaw', 'Cyan', 'Reia', 'ZWEB_TEST', 'Casey', 'Lewis', 'Swati', 'Andrius', 'Rawan', 'Alan', 'Piri', 'Raj', 'Albert') 
-
+where SalesRepRefFullName in (select SalesRepInitials from admin where SalesRepInitials is not null and SalesRepInitials!='')
+GO
 
 --2 Sales by Category
 create view kpi.SalesbyCategory as
@@ -475,20 +475,38 @@ with data as
 (
 select OrderChannel, cast(datepart(DAY,getdate())-datepart(DAY,txndate) as varchar(5)) + 'd' as range,sum(round(TotalAmount,0)) TotalSales from Salesorder
 where txndate > format(DATEADD(day, -4, getdate()),'yyyy-MM-dd') 
+and store <>'training'
 group by OrderChannel,datepart(day,txndate)
 union
 select OrderChannel, cast(datepart(week,getdate())-datepart(week,txndate) as varchar(5)) + 'w' as range,sum(round(TotalAmount,0)) TotalSales from Salesorder
-where datepart(week,txndate) > datepart(week,getdate())-6  
+where datepart(week,txndate) > datepart(week,getdate())-6 
+and store <>'training' 
 group by OrderChannel,datepart(week,txndate)
 union
 select OrderChannel, cast(datepart(month,getdate())-datepart(month,txndate) as varchar(5)) + 'm' as range,sum(round(TotalAmount,0)) TotalSales from Salesorder
 where datepart(month,txndate) > datepart(month,getdate())-6 
+and store <>'training'
 group by OrderChannel,datepart(month,txndate)
+union
+select OrderChannel+'_'+Store as OrderChannel, cast(datepart(DAY,getdate())-datepart(DAY,txndate) as varchar(5)) + 'd' as range,sum(round(TotalAmount,0)) TotalSales from Salesorder
+where txndate > format(DATEADD(day, -4, getdate()),'yyyy-MM-dd') 
+and orderChannel in ('Showroom','TradeMe') and store <>'training'
+group by OrderChannel+'_'+Store,datepart(day,txndate)
+union
+select OrderChannel+'_'+Store as OrderChannel, cast(datepart(week,getdate())-datepart(week,txndate) as varchar(5)) + 'w' as range,sum(round(TotalAmount,0)) TotalSales from Salesorder
+where datepart(week,txndate) > datepart(week,getdate())-6 
+and orderChannel in ('Showroom','TradeMe')  and store <>'training'
+group by OrderChannel+'_'+Store,datepart(week,txndate)
+union
+select OrderChannel+'_'+Store as OrderChannel , cast(datepart(month,getdate())-datepart(month,txndate) as varchar(5)) + 'm' as range,sum(round(TotalAmount,0)) TotalSales from Salesorder
+where datepart(month,txndate) > datepart(month,getdate())-6 
+and orderChannel in ('Showroom','TradeMe') and store <>'training'
+group by OrderChannel+'_'+Store,datepart(month,txndate)
 )
-select OrderChannel as RepName, isnull([0d],0) as [Today],isnull([1d],0) as [L1D],isnull([2d],0) as [L2D],isnull([3d],0) as [L3D],isnull([0w],0) as [WTD],isnull([1w],0) as [L1W],isnull([2w],0) as [L2W],isnull([3w],0) as [L3W],isnull([4w],0) as [L4W],isnull([5w],0) as [L5W],isnull([0m],0) as [MTD],isnull([1m],0) as [L1M],isnull([2m],0) as [L2M],isnull([3m],0) as [L3M],isnull([4m],0) as [L4M],isnull([5m],0) as [L5M]
+select OrderChannel as Channel, isnull([0d],0) as [Today],isnull([1d],0) as [L1D],isnull([2d],0) as [L2D],isnull([3d],0) as [L3D],isnull([0w],0) as [WTD],isnull([1w],0) as [L1W],isnull([2w],0) as [L2W],isnull([3w],0) as [L3W],isnull([4w],0) as [L4W],isnull([5w],0) as [L5W],isnull([0m],0) as [MTD],isnull([1m],0) as [L1M],isnull([2m],0) as [L2M],isnull([3m],0) as [L3M],isnull([4m],0) as [L4M],isnull([5m],0) as [L5M]
 from data
 pivot (sum(TotalSales) for [range] in ([0d],[1d],[2d],[3d],[0w],[1w],[2w],[3w],[4w],[5w],[0m],[1m],[2m],[3m],[4m],[5m])) as Total
-where OrderChannel in ('Showroom','TradeMe','B2B','Web','Telesales')
+where OrderChannel in ('Showroom','TradeMe','B2B','Web','Telesales','TradeMe_auckland','TradeMe_christchurch','Showroom_auckland','Showroom_christchurch')
 
 
 --9 sales by B2B for david
