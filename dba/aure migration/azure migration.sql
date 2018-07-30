@@ -5,21 +5,33 @@ select * from salesorder order by 2 desc
 
 select * from sys.database_files;
 
-use Dwdb
-ALTER DATABASE Dwdb  SET RECOVERY SIMPLE;  
+use dwdb0724
+ALTER DATABASE dwdb0724  SET RECOVERY SIMPLE;  
 GO  
 
 DBCC SHRINKFILE (WarehouseDataCenter_log, 100); 
 
 -- Reset the database recovery model.  
-ALTER DATABASE Dwdb SET RECOVERY FULL;  
+ALTER DATABASE dwdb0724 SET RECOVERY FULL;  
 GO  
 
 
 #http://www.fileformat.info/tip/microsoft/sql_orphan_user.htm
 
+/*
+TITLE: Microsoft SQL Server Management Studio
+------------------------------
+
+One or more unsupported elements were found in the schema used as part of a data package.
+Error SQL71564: Error validating element [dwuser]: The element [dwuser] has been orphaned from its login and cannot be deployed.
+Error SQL71564: Error validating element [pbuser]: The element [pbuser] has been orphaned from its login and cannot be deployed.
+ (Microsoft.SqlServer.Dac)
+
+*/
+
+
 SET NOCOUNT ON
-USE dwdb
+USE dwdb0724
 GO
 DECLARE @loop INT
 DECLARE @USER sysname
@@ -32,7 +44,7 @@ IF OBJECT_ID('tempdb..#Orphaned') IS NOT NULL
 
 CREATE TABLE #Orphaned (UserName sysname,IDENT INT IDENTITY(1,1))
 
-
+--check unsupport login
 INSERT INTO #Orphaned (UserName)
 SELECT [name] FROM sys.database_principals WHERE [type] IN ('U','S') AND is_fixed_role = 0 AND [Name] NOT IN ('dbo','guest','sys','INFORMATION_SCHEMA')
 
@@ -66,6 +78,7 @@ BEGIN
 END
 SET NOCOUNT OFF
 
+
 CREATE LOGIN [dwuser] WITH PASSWORD = N'***'
 dwuser link to DB user reset
 CREATE LOGIN [pbuser] WITH PASSWORD = N'***'
@@ -89,3 +102,6 @@ and p.name not in (
     'MS_DataCollectorInternalUser'
 ) ;
  
+
+
+
