@@ -105,3 +105,9 @@ and p.name not in (
 
 
 
+ 
+create user dwuser with password='×××'
+create user pbuser with password='×××'
+alter role db_owner add member dwuser;
+alter role db_owner add member pbuser;
+

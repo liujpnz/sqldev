@@ -75,3 +75,53 @@ FROM
      CROSS APPLY sys.dm_exec_sql_text(QS.sql_handle) as ST) as query_stats
 GROUP BY query_stats.query_hash
 ORDER BY 2 DESC;
+
+
+
+--grouping
+Without grouping
+
+SELECT STRING_AGG(Name, ', ') AS Departments
+FROM HumanResources.Department;
+
+With grouping :
+
+SELECT GroupName, STRING_AGG(Name, ', ') AS Departments
+FROM HumanResources.Department
+GROUP BY GroupName;
+
+With grouping and sub-sorting
+
+SELECT GroupName, STRING_AGG(Name, ', ') WITHIN GROUP (ORDER BY Name ASC) AS Departments
+FROM HumanResources.Department 
+GROUP BY GroupName;
+
+
+--
+--top 5 sql
+SELECT TOP 5 query_stats.query_hash AS "Query Hash",
+    SUM(query_stats.total_worker_time) / SUM(query_stats.execution_count) AS "Avg CPU Time",
+    MIN(query_stats.statement_text) AS "Statement Text"
+FROM
+    (SELECT QS.*,
+    SUBSTRING(ST.text, (QS.statement_start_offset/2) + 1,
+    ((CASE statement_end_offset
+        WHEN -1 THEN DATALENGTH(ST.text)
+        ELSE QS.statement_end_offset END
+            - QS.statement_start_offset)/2) + 1) AS statement_text
+     FROM sys.dm_exec_query_stats AS QS
+     CROSS APPLY sys.dm_exec_sql_text(QS.sql_handle) as ST) as query_stats
+GROUP BY query_stats.query_hash
+ORDER BY 2 DESC;
+
+--current running sql
+
+SELECT sqltext.TEXT,
+req.session_id,
+req.status,
+req.start_time,
+req.command,
+req.cpu_time,
+req.total_elapsed_time
+FROM sys.dm_exec_requests req
+CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS sqltext 
