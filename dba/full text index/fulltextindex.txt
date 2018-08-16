@@ -1,0 +1,45 @@
+
+
+https://docs.microsoft.com/en-us/sql/t-sql/statements/create-fulltext-catalog-transact-sql?view=sql-server-2017
+---
+CREATE UNIQUE INDEX _ix_ServerID ON Servers(ServerID)
+
+GO
+
+
+CREATE FULLTEXT INDEX ON dbo.Servers (ServerName)
+
+KEY INDEX _ix_ServerID
+
+ON UpdaterCatalog
+
+WITH CHANGE_TRACKING AUTO
+
+
+---
+
+CREATE FULLTEXT CATALOG advance_search AS DEFAULT;  
+
+CREATE FULLTEXT INDEX ON invoice 
+(
+CustomerRefListID,CustomerRefFullName,ImportRefNumber,SalesorderRefNumber,RefNumber,BillPersonFullName,BillAddressLine1,BillAddressLine2,BillPersonTelephone,BillPersonMobile,BillPersonFax,BillAddressDistrict,BillAddressCity,BillAddressRegion,BillAddressCountry,BillAddressPostalCode,BillAddressNote,ShipPersonFullName,ShipPersonFax,ShipPersonTelephone,ShipPersonMobile,ShipAddressLine1,ShipAddressLine2,ShipAddressDistrict,ShipAddressCity,ShipAddressRegion,ShipAddressCountry,ShipAddressPostalCode,ShipAddressNote,ReckonNumber,SalesRepRefListID,SalesRepRefFullName,FOB,ShipMethodRefListID,ShipMethodRefFullName,Memo,CustomerMsgRefListID,CustomerMsgRefFullName,Status,ShippingRegion,IsEmailSent,TrackingNumber,ExpressCompany,IsSavedInReckon,SalesTaxTotal,SalesTaxPercentage,CustomFieldOther,CustomFieldEmail,ShipTerms,CustomerEmail,Notes,ShipFee,Checker,Packer,Picker,Taxcode,CustomerID,CustomerPONumber,OrderChannel,InvoicedBy,Store,importTxnid
+)
+key index PK_Invoice1
+ON advance_search;   
+
+
+CREATE FULLTEXT INDEX ON invoice 
+(
+CustomerRefFullName,ImportRefNumber,SalesorderRefNumber,RefNumber,BillPersonFullName,BillAddressLine1,BillAddressLine2,BillPersonTelephone,BillPersonMobile,BillPersonFax,BillAddressDistrict,BillAddressCity,BillAddressRegion,BillAddressCountry,BillAddressPostalCode,BillAddressNote,ShipPersonFullName,ShipPersonFax,ShipPersonTelephone,ShipPersonMobile,ShipAddressLine1,ShipAddressLine2,ShipAddressDistrict,ShipAddressCity,ShipAddressRegion,ShipAddressCountry,ShipAddressPostalCode,ShipAddressNote,ReckonNumber,SalesRepRefListID
+)
+key index PK_Invoice1
+ON advance_search; 
+
+--sql
+
+select 'invoice' as type, id,salesorderrefnumber, refnumber, billpersonfullname, billpersonmobile, billpersontelephone, billpersonfax, shippersonfullname,shippersonmobile, shippersontelephone, customeremail, shipaddressline1, shipaddressline2, totalamount, status
+ from invoice 
+ where  contains((CustomerRefFullName,ImportRefNumber,SalesorderRefNumber,RefNumber,BillPersonFullName,BillAddressLine1,BillAddressLine2,BillPersonTelephone,BillPersonMobile,BillPersonFax,BillAddressDistrict,BillAddressCity,BillAddressRegion,BillAddressCountry,BillAddressPostalCode,BillAddressNote,ShipPersonFullName,ShipPersonFax,ShipPersonTelephone,ShipPersonMobile,ShipAddressLine1,ShipAddressLine2,ShipAddressDistrict,ShipAddressCity,ShipAddressRegion,ShipAddressCountry,ShipAddressPostalCode,ShipAddressNote,ReckonNumber,SalesRepRefListID),'%danchen%') order by id desc
+
+ 
+ 

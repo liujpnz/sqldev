@@ -1,0 +1,11 @@
+publish/subscribe
+https://devjef.wordpress.com/2016/12/08/setting-up-replication-from-on-premise-sql-server-to-azure-sql-db/
+
+
+data sync
+https://www.sqlshack.com/how-to-sync-azure-sql-databases-and-on-premises-databases-with-sql-data-sync/
+
+
+create user dbsync with password='Tradedepot123'
+alter role db_owner add member dbsync;
+alter role DataSync_Executor add member dbsync;

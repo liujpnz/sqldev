@@ -57,3 +57,14 @@ RESTORE DATABASE AdventureWorks WITH RECOVERY;
 GO  
 
 
+
+
+
+--create backup job
+1. use maintenance plans, will eventally add jobs in agent
+
+
+
+
+
+2. create sql server agent job

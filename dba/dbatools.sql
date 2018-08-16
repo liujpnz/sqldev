@@ -125,3 +125,34 @@ req.cpu_time,
 req.total_elapsed_time
 FROM sys.dm_exec_requests req
 CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS sqltext 
+
+
+
+--session
+select * from sys.dm_exec_sessions
+select HOST_NAME,count(*) from sys.dm_exec_sessions group by HOST_NAME;
+select HOST_NAME,program_name,count(*) from sys.dm_exec_sessions where Host_name not in ('DESKTOP-3SLRU37') group by HOST_NAME,program_name;
+
+
+
+--connect with port
+select * from sys.dm_exec_connections;
+
+go
+
+
+select * from sys.dm_exec_requests;
+select * from sys.dm_exec_sql_text(0x020000005BD36F1F8C0A0F1C801AD40E0C861878492994890000000000000000000000000000000000000000);
+
+
+--primary key
+
+DROP INDEX PK_ItemStock1 ON [dbo].[ItemStock];
+GO
+
+CREATE UNIQUE CLUSTERED INDEX PK_ItemStock1 ON [dbo].[ItemStock](ID);
+GO
+
+ALTER TABLE [dbo].[ItemStock] 
+ADD CONSTRAINT PK_ItemStock11 PRIMARY KEY CLUSTERED (ID);
+GO
