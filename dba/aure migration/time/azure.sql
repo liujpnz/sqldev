@@ -45,7 +45,7 @@ select getutcdate()
 
 
 --create user
-create user dwuser with password='Tradedepot123'
-create user pbuser with password='Tradedepot123'
+create user dwuser with password='***'
+create user pbuser with password='***'
 alter role db_owner add member dwuser;
 alter role db_owner add member pbuser;
